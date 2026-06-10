@@ -2,247 +2,104 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Carregando...</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Cormorant+SC:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --primary: #b89a7a;
-    --bg:      #ffffff;
-    --text:    #5a3e2b;
-    --muted:   #c0a898;
-    --card:    #ffffff;
-  }
-
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  body {
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cormorant Garamond', serif;
-    transition: background 0.3s;
-  }
-
-  .card {
-    width: 100%;
-    max-width: 390px;
-    min-height: 100vh;
-    background: var(--card);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 52px 32px 48px;
-  }
-
-  /* ── LOADING ── */
-  .loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    color: var(--muted);
-    font-size: 14px;
-    letter-spacing: 1px;
-  }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 2px solid var(--muted);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── FOTO ── */
-  .photo-wrap {
-    width: 110px; height: 110px;
-    border-radius: 50%;
-    border: 1.5px solid var(--primary);
-    overflow: hidden;
-    margin-bottom: 24px;
-    background: color-mix(in srgb, var(--primary) 15%, white);
-    flex-shrink: 0;
-  }
-  .photo-wrap img { width:100%; height:100%; object-fit:cover; object-position:top center; }
-  .photo-placeholder {
-    width:100%; height:100%;
-    display:flex; align-items:center; justify-content:center;
-    color: var(--primary);
-    font-size: 38px; font-weight: 300;
-  }
-
-  /* ── NOME ── */
-  .name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 30px; font-weight: 400; font-style: italic;
-    color: var(--text);
-    line-height: 1.15; text-align: center;
-    margin-bottom: 6px;
-  }
-  .name .inicial {
-    font-size: 42px; font-weight: 300;
-  }
-  .specialty {
-    font-family: 'Cormorant SC', serif;
-    font-size: 11px; font-weight: 300;
-    color: var(--muted);
-    letter-spacing: 3px; text-align: center;
-    margin-bottom: 32px;
-  }
-  .divider {
-    width: 40px; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    margin-bottom: 32px;
-  }
-
-  /* ── BOTÕES ── */
-  .buttons { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-
-  .btn {
-    width: 100%; padding: 15px 24px;
-    border-radius: 50px;
-    font-family: 'Cormorant SC', serif;
-    font-size: 13px; letter-spacing: 2px;
-    text-decoration: none; text-align: center;
-    cursor: pointer;
-    transition: all 0.22s ease;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    border: none;
-  }
-  .btn-primary {
-    background: var(--primary);
-    color: #fff;
-  }
-  .btn-primary:hover { filter: brightness(0.9); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-
-  .btn-outline {
-    background: transparent;
-    color: var(--text);
-    border: 1px solid color-mix(in srgb, var(--primary) 45%, transparent);
-  }
-  .btn-outline:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); border-color: var(--primary); transform: translateY(-1px); }
-
-  .btn svg { width:17px; height:17px; flex-shrink:0; }
-
-  /* ── TEMA ESCURO ── */
-  body.escuro { background: #0a0a0a; }
-  body.escuro .card { background: #0f0f0f; }
-  body.escuro .btn-outline { color: var(--primary); }
-  body.escuro .btn-primary { color: #0f0f0f; }
-
-  /* ── 404 ── */
-  .not-found { text-align:center; color: #999; }
-  .not-found h2 { font-size: 48px; font-weight: 300; color: #ccc; margin-bottom: 8px; }
-  .not-found p { font-size: 14px; letter-spacing: 1px; }
-
-  .footer {
-    margin-top: auto; padding-top: 48px;
-    font-size: 11px; color: var(--muted);
-    letter-spacing: 1px; text-align: center;
-    opacity: 0.5;
-  }
+:root{--primary:#c9a84c;--bg:#0d0d0d;--text:#f0f0f0;--muted:rgba(255,255,255,0.45);--bor:rgba(255,255,255,0.08);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
+.hero{position:relative;height:62vh;overflow:hidden;}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block;}
+.hero-ph{width:100%;height:100%;background:linear-gradient(160deg,#2a2a2a,#1a1a1a);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;letter-spacing:1px;}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.1) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.6) 70%,var(--bg) 100%);}
+.hero-info{position:absolute;bottom:20px;left:20px;right:20px;}
+.hero-nome{font-family:'Playfair Display',serif;font-size:30px;font-weight:600;line-height:1.1;margin-bottom:6px;text-shadow:0 2px 20px rgba(0,0,0,.5);}
+.hero-nome em{font-style:italic;color:var(--primary);}
+.hero-esp{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);}
+.navbar{position:sticky;top:0;z-index:100;background:rgba(13,13,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--bor);display:flex;padding:0 8px;}
+.ni{flex:1;padding:13px 0;background:none;border:none;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;transition:color .2s;}
+.ni svg{width:17px;height:17px;}
+.ni.active{color:var(--primary);}
+.ni::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:2px;background:var(--primary);border-radius:2px 2px 0 0;transform:scaleX(0);transition:transform .2s;}
+.ni.active::after{transform:scaleX(1);}
+.page{display:none;padding:20px 16px 100px;}
+.page.active{display:block;}
+.sec{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.sc{background:rgba(255,255,255,.04);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .18s;border:1px solid var(--bor);}
+.sc:hover{transform:translateY(-2px);}
+.sc img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;}
+.sc-ph{width:100%;aspect-ratio:4/3;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;color:var(--bor);}
+.sc-body{padding:12px;}
+.sc-titulo{font-size:13px;font-weight:600;margin-bottom:3px;}
+.sc-dur{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.sc-foot{display:flex;align-items:center;justify-content:space-between;}
+.sc-preco{font-size:15px;font-weight:700;color:var(--primary);}
+.sc-btn{width:28px;height:28px;border-radius:50%;background:var(--primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.sc-btn svg{width:14px;height:14px;color:#0d0d0d;}
+.sobre-av{width:88px;height:88px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;margin:0 auto 16px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--primary);font-family:'Playfair Display',serif;}
+.sobre-av img{width:100%;height:100%;object-fit:cover;}
+.sobre-nome{font-family:'Playfair Display',serif;font-size:22px;text-align:center;margin-bottom:4px;}
+.sobre-esp{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:20px;}
+.sobre-bio{font-size:14px;color:rgba(255,255,255,.7);line-height:1.7;}
+.share-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.share-url{background:rgba(255,255,255,.04);border:1px solid var(--bor);border-radius:12px;padding:14px 16px;width:100%;display:flex;align-items:center;gap:10px;}
+.share-url span{flex:1;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-copy{background:var(--primary);color:#0d0d0d;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;}
+.share-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.share-btn{padding:13px;border-radius:12px;border:1px solid var(--bor);background:rgba(255,255,255,.04);color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.nav-bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(13,13,13,.95);backdrop-filter:blur(20px);border-top:1px solid var(--bor);display:flex;padding-bottom:env(safe-area-inset-bottom);}
+.spin{width:28px;height:28px;border:2px solid var(--bor);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 16px;}
+@keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="card" id="app">
-  <div class="loading">
-    <div class="spinner"></div>
-    <span>carregando</span>
-  </div>
-</div>
-
+<div id="root" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--muted)"><div class="spin"></div><span style="font-size:12px;letter-spacing:1px">carregando</span></div>
 <script>
-// ─── CONFIG ───────────────────────────────────────────────
-const SUPABASE_URL  = 'https://wnyfaefcfgwhawcswjyx.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndueWZhZWZjZmd3aGF3Y3N3anl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTMwNjMsImV4cCI6MjA5NjY2OTA2M30.xkfao9VVMr8QM16FhrpxY6lPsjkhBsnfalmjYgXiPn8';
-// ──────────────────────────────────────────────────────────
+const SB_URL='https://wnyfaefcfgwhawcswjyx.supabase.co';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndueWZhZWZjZmd3aGF3Y3N3anl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTMwNjMsImV4cCI6MjA5NjY2OTA2M30.xkfao9VVMr8QM16FhrpxY6lPsjkhBsnfalmjYgXiPn8';
+const SITE='https://agendar-nexa-v1.vercel.app';
+const sb=supabase.createClient(SB_URL,SB_ANON);
+const slug=location.pathname.split('/').filter(Boolean).pop();
+const ICONS={calendar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',instagram:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>',whatsapp:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.428a.5.5 0 00.615.615l5.573-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>',maps:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>',link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>'};
+let PROF=null;
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+function durStr(m){return m>=60?`${Math.floor(m/60)}h${m%60?m%60+'min':''}`:`${m}min`;}
+function showPage(p){document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));document.getElementById('page-'+p)?.classList.add('active');['nav-'+p,'nav2-'+p].forEach(id=>document.getElementById(id)?.classList.add('active'));}
 
-// Pega o slug da URL: /cliente/karol-ferreira → "karol-ferreira"
-const slug = location.pathname.split('/').filter(Boolean).pop();
+async function init(){
+  const{data:prof}=await sb.from('clientes').select('*').eq('slug',slug).eq('minisite_ativo',true).single();
+  if(!prof){document.getElementById('root').innerHTML='<p style="color:rgba(255,255,255,.3)">Página não encontrada</p>';return;}
+  PROF=prof;
+  document.documentElement.style.setProperty('--primary',prof.cor_primary||'#c9a84c');
+  document.documentElement.style.setProperty('--bg',prof.cor_bg||'#0d0d0d');
+  document.documentElement.style.setProperty('--text',prof.cor_texto||'#f0f0f0');
+  document.title=`${prof.nome}${prof.especialidade?' · '+prof.especialidade:''}`;
+  const{data:links}=await sb.from('links').select('*').eq('cliente_id',prof.id).eq('ativo',true).order('ordem');
+  const{data:servs}=await sb.from('servicos').select('*').eq('cliente_id',prof.id).eq('ativo',true).order('ordem');
+  const ini=prof.nome.charAt(0),resto=prof.nome.slice(1);
+  const agenUrl=`${SITE}/agendar/${prof.slug}`;
+  const linksHTML=(links||[]).map(l=>`<a href="${l.url}" style="display:flex;align-items:center;gap:10px;padding:14px 20px;border-radius:50px;font-family:Inter,sans-serif;font-size:13px;font-weight:500;text-decoration:none;transition:all .2s;margin-bottom:10px;${l.destaque?'background:var(--primary);color:'+(prof.cor_botao_txt||'#0d0d0d')+';border:none':'background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.15)'}" target="_blank"><span style="width:18px;height:18px;flex-shrink:0">${ICONS[l.icone]||ICONS.link}</span>${l.label}</a>`).join('');
+  const servsHTML=(servs||[]).map(s=>`<div class="sc" onclick="${prof.agenda_ativo?`location.href='${agenUrl}?s=${s.id}'`:'void 0'}"><div>${s.foto_url?`<img src="${s.foto_url}" alt="${s.titulo}" style="width:100%;aspect-ratio:4/3;object-fit:cover;display:block">`:'<div class="sc-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="28" height="28"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>'}</div><div class="sc-body"><div class="sc-titulo">${s.titulo}</div><div class="sc-dur">${durStr(s.duracao_min||60)}</div><div class="sc-foot"><div class="sc-preco">${s.valor?'R$ '+Number(s.valor).toFixed(2).replace('.',','):''}</div><button class="sc-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button></div></div></div>`).join('');
 
-const ICONS = {
-  calendar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>`,
-  instagram:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>`,
-  whatsapp: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.428a.5.5 0 00.615.615l5.573-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>`,
-  maps:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
-  link:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>`
-};
-
-async function init() {
-  // Busca cliente pelo slug
-  const { data: cliente, error } = await sb
-    .from('clientes')
-    .select('*')
-    .eq('slug', slug)
-    .eq('ativo', true)
-    .single();
-
-  if (error || !cliente) { render404(); return; }
-
-  // Busca os links
-  const { data: links } = await sb
-    .from('links')
-    .select('*')
-    .eq('cliente_id', cliente.id)
-    .eq('ativo', true)
-    .order('ordem');
-
-  renderSite(cliente, links || []);
+  document.getElementById('root').outerHTML=`
+    <div class="hero">${prof.foto_capa_url?`<img src="${prof.foto_capa_url}" alt="">`:'<div class="hero-ph">foto de capa</div>'}<div class="hero-grad"></div><div class="hero-info"><div class="hero-nome"><em>${ini}</em>${resto}</div>${prof.especialidade?`<div class="hero-esp">${prof.especialidade}</div>`:''}</div></div>
+    <nav class="navbar">
+      <button class="ni active" onclick="showPage('home')" id="nav-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+      <button class="ni" onclick="showPage('sobre')" id="nav-sobre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Sobre</button>
+      <button class="ni" onclick="showPage('share')" id="nav-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar</button>
+    </nav>
+    <div class="page active" id="page-home">${servs?.length?`<p class="sec">Serviços</p><div class="grid">${servsHTML}</div>`:links?.length?linksHTML:'<p style="color:var(--muted);text-align:center;padding:40px">Em breve</p>'}</div>
+    <div class="page" id="page-sobre"><div class="sobre-av">${prof.foto_url?`<img src="${prof.foto_url}" alt="">`:`<span>${ini}</span>`}</div><div class="sobre-nome">${prof.nome}</div>${prof.especialidade?`<div class="sobre-esp">${prof.especialidade}</div>`:''} ${prof.bio?`<p class="sobre-bio">${prof.bio}</p>`:''}</div>
+    <div class="page" id="page-share"><p class="sec">Compartilhar</p><div class="share-wrap"><div class="share-url"><span id="surl">${agenUrl}</span><button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('surl').textContent)">Copiar</button></div><div class="share-btns"><button class="share-btn" onclick="window.open('https://wa.me/?text='+encodeURIComponent(document.getElementById('surl').textContent),'_blank')"><svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="color:#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.428a.5.5 0 00.615.615l5.573-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>WhatsApp</button><button class="share-btn" onclick="navigator.share?navigator.share({url:document.getElementById('surl').textContent}):navigator.clipboard?.writeText(document.getElementById('surl').textContent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar</button></div></div></div>
+    <nav class="nav-bottom">
+      <button class="ni active" onclick="showPage('home')" id="nav2-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</button>
+      <button class="ni" onclick="showPage('sobre')" id="nav2-sobre"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Sobre</button>
+      <button class="ni" onclick="showPage('share')" id="nav2-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Compartilhar</button>
+    </nav>`;
 }
-
-function renderSite(c, links) {
-  // Aplica tema e cores via CSS vars
-  document.documentElement.style.setProperty('--primary', c.cor_primaria);
-  document.documentElement.style.setProperty('--text',    c.cor_texto);
-  document.documentElement.style.setProperty('--bg',      c.cor_fundo);
-  document.documentElement.style.setProperty('--card',    c.cor_fundo);
-  document.documentElement.style.setProperty('--muted',   c.cor_primaria + '99');
-
-  if (c.tema === 'escuro') document.body.classList.add('escuro');
-
-  document.title = `${c.nome} · ${c.especialidade || ''}`;
-
-  // Primeira letra para o inicial estilizado
-  const inicial = c.nome.charAt(0);
-  const resto   = c.nome.slice(1);
-
-  // Foto
-  const fotoHTML = c.foto_url
-    ? `<img src="${c.foto_url}" alt="${c.nome}">`
-    : `<div class="photo-placeholder">${inicial}</div>`;
-
-  // Botões
-  const botoesHTML = links.map(l => {
-    const cls  = l.destaque ? 'btn btn-primary' : 'btn btn-outline';
-    const icon = ICONS[l.icone] || ICONS.link;
-    return `<a href="${l.url}" class="${cls}" target="_blank" rel="noopener">${icon}${l.label}</a>`;
-  }).join('');
-
-  document.getElementById('app').innerHTML = `
-    <div class="photo-wrap">${fotoHTML}</div>
-    <div class="name"><span class="inicial">${inicial}</span>${resto}</div>
-    ${c.especialidade ? `<div class="specialty">${c.especialidade}</div>` : ''}
-    <div class="divider"></div>
-    <div class="buttons">${botoesHTML}</div>
-    <div class="footer">${c.nome.toLowerCase()}</div>
-  `;
-}
-
-function render404() {
-  document.getElementById('app').innerHTML = `
-    <div class="not-found">
-      <h2>404</h2>
-      <p>página não encontrada</p>
-    </div>
-  `;
-}
-
 init();
 </script>
 </body>
