@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexa · Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222;--border:#2a2a2a;
+  --gold:#c9a84c;--gold2:#e8d08a;--text:#e8e8e8;--muted:#666;
+  --pending:#f0a500;--confirm:#5cba8a;--cancel:#e05555;--remark:#7b9fe0;
+  --radius:10px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:18px;}
+.login-box h1{font-size:22px;font-weight:600;color:var(--gold);text-align:center;}
+.login-box p{font-size:12px;color:var(--muted);text-align:center;margin-top:-10px;}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh;}
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 16px;gap:4px;z-index:100;}
+.logo{font-size:20px;font-weight:600;color:var(--gold);margin-bottom:24px;padding:0 8px;}
+.logo span{color:var(--muted);font-weight:300;}
+.nav-section{font-size:10px;color:var(--muted);letter-spacing:1.5px;padding:12px 12px 4px;text-transform:uppercase;}
+.nav-btn{background:none;border:none;color:var(--muted);cursor:pointer;text-align:left;padding:10px 12px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;transition:all .15s;display:flex;align-items:center;gap:8px;width:100%;}
+.nav-btn:hover{color:var(--text);background:rgba(255,255,255,.05);}
+.nav-btn.active{color:var(--gold);background:rgba(201,168,76,.1);}
+.nav-btn svg{width:15px;height:15px;flex-shrink:0;}
+.sidebar-footer{margin-top:auto;}
+.main{margin-left:220px;padding:28px 32px;min-height:100vh;}
+
+/* PAGE HEADER */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-header h2{font-size:18px;font-weight:500;}
+
+/* CARDS CLIENTES */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.cliente-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;display:flex;flex-direction:column;gap:14px;transition:border-color .2s;}
+.cliente-card:hover{border-color:#3a3a3a;}
+.cc-header{display:flex;align-items:center;gap:12px;}
+.avatar{width:46px;height:46px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:500;flex-shrink:0;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.cc-info h3{font-size:15px;font-weight:500;margin-bottom:2px;}
+.cc-info p{font-size:12px;color:var(--muted);}
+.cc-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.badge{font-size:10px;padding:3px 8px;border-radius:20px;}
+.badge-ativo{background:rgba(92,186,138,.15);color:var(--confirm);}
+.badge-inativo{background:rgba(224,85,85,.15);color:var(--cancel);}
+.badge-agenda{background:rgba(201,168,76,.15);color:var(--gold);}
+.badge-slug{background:rgba(255,255,255,.05);color:var(--muted);font-family:monospace;}
+.preview-btn{font-size:11px;color:var(--gold);text-decoration:none;display:flex;align-items:center;gap:3px;}
+.preview-btn:hover{text-decoration:underline;}
+.cc-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* AGENDA CONFIG dentro do card */
+.agenda-section{border-top:1px solid var(--border);padding-top:12px;}
+.agenda-section-title{font-size:11px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+.agenda-tabs{display:flex;gap:4px;margin-bottom:12px;}
+.at-btn{padding:5px 10px;border-radius:6px;border:none;background:rgba(255,255,255,.05);color:var(--muted);font-size:11px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.at-btn.active{background:rgba(201,168,76,.15);color:var(--gold);}
+
+/* BOTÕES */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;border:none;transition:all .15s;white-space:nowrap;}
+.btn-gold{background:var(--gold);color:#0f0f0f;}
+.btn-gold:hover{background:var(--gold2);}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);}
+.btn-ghost:hover{background:rgba(255,255,255,.1);}
+.btn-green{background:rgba(92,186,138,.15);color:var(--confirm);}
+.btn-green:hover{background:rgba(92,186,138,.25);}
+.btn-red{background:rgba(224,85,85,.15);color:var(--cancel);}
+.btn-red:hover{background:rgba(224,85,85,.25);}
+.btn-blue{background:rgba(123,159,224,.15);color:var(--remark);}
+.btn-blue:hover{background:rgba(123,159,224,.25);}
+.btn-outline-gold{background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,.4);}
+.btn-outline-gold:hover{background:rgba(201,168,76,.1);}
+.btn-sm{padding:5px 9px;font-size:11px;}
+.btn svg{width:13px;height:13px;}
+.btn-full{width:100%;justify-content:center;padding:10px;}
+
+/* INPUTS */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-full{grid-column:1/-1;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:11px;color:var(--muted);font-weight:500;}
+.field input,.field select,.field textarea{background:#111;border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.field input[type=color]{padding:3px 6px;height:38px;cursor:pointer;}
+.color-row{display:flex;align-items:center;gap:8px;}
+.color-row input[type=text]{flex:1;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;}
+.modal-hdr h3{font-size:16px;font-weight:500;}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:22px;padding:2px 6px;line-height:1;}
+.modal-close:hover{color:var(--text);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:12px;border-top:1px solid var(--border);}
+.modal-tabs{display:flex;gap:4px;background:var(--bg);border-radius:8px;padding:3px;width:fit-content;}
+.modal-tab{padding:7px 14px;border-radius:6px;border:none;background:none;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.modal-tab.active{background:var(--surface);color:var(--text);}
+
+/* AGENDAMENTOS */
+.filtros{display:flex;gap:4px;background:var(--surface);border-radius:8px;padding:3px;width:fit-content;margin-bottom:18px;flex-wrap:wrap;}
+.filtro-btn{padding:6px 12px;border-radius:6px;border:none;background:none;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.filtro-btn.active{background:var(--surface2);color:var(--text);}
+.n-badge{font-size:10px;background:rgba(240,165,0,.25);color:var(--pending);padding:1px 5px;border-radius:10px;}
+.agend-list{display:flex;flex-direction:column;gap:8px;}
+.agend-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.agend-card.pendente{border-left-color:var(--pending);}
+.agend-card.confirmado{border-left-color:var(--confirm);}
+.agend-card.cancelado{border-left-color:var(--cancel);}
+.agend-card.remarcado{border-left-color:var(--remark);}
+.agend-card.concluido{border-left-color:#444;opacity:.55;}
+.agend-dt{text-align:center;min-width:44px;}
+.agend-dt .day{font-size:20px;font-weight:600;line-height:1;}
+.agend-dt .mon{font-size:10px;color:var(--muted);text-transform:uppercase;}
+.agend-dt .hr{font-size:12px;color:var(--gold);font-weight:500;margin-top:2px;}
+.agend-sep{width:1px;height:44px;background:var(--border);flex-shrink:0;}
+.agend-info{flex:1;min-width:160px;}
+.agend-info .nome{font-size:14px;font-weight:500;margin-bottom:2px;}
+.agend-info .serv{font-size:12px;color:var(--muted);}
+.agend-info .tel{font-size:11px;color:var(--muted);margin-top:3px;}
+.status-pill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.status-pill.pendente{background:rgba(240,165,0,.15);color:var(--pending);}
+.status-pill.confirmado{background:rgba(92,186,138,.15);color:var(--confirm);}
+.status-pill.cancelado{background:rgba(224,85,85,.15);color:var(--cancel);}
+.status-pill.remarcado{background:rgba(123,159,224,.15);color:var(--remark);}
+.status-pill.concluido{background:rgba(136,136,136,.15);color:#888;}
+.agend-actions{display:flex;gap:5px;flex-wrap:wrap;}
+
+/* SERVIÇOS */
+.serv-list{display:flex;flex-direction:column;gap:8px;}
+.serv-item{background:var(--surface2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.serv-item-info{flex:1;}
+.serv-item-info strong{font-size:13px;display:block;margin-bottom:2px;}
+.serv-item-info span{font-size:11px;color:var(--muted);}
+.serv-valor{font-size:14px;font-weight:600;color:var(--gold);margin-right:6px;}
+
+/* SLOTS */
+.cal-wrap{margin-bottom:16px;}
+.cal-nav-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.cal-nav-row h4{font-size:14px;font-weight:500;flex:1;text-align:center;}
+.cal-nav-row button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;border-radius:6px;padding:4px 8px;}
+.cal-nav-row button:hover{color:var(--text);background:rgba(255,255,255,.05);}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-dn{text-align:center;font-size:10px;color:var(--muted);padding:3px 0;}
+.cal-d{aspect-ratio:1;border-radius:6px;border:none;font-size:12px;cursor:pointer;background:none;color:var(--text);transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.cal-d:disabled{color:#2a2a2a;cursor:default;}
+.cal-d.has{background:rgba(201,168,76,.12);color:var(--gold);}
+.cal-d.has:hover{background:rgba(201,168,76,.25);}
+.cal-d.sel{background:var(--gold);color:#0f0f0f;font-weight:600;}
+.cal-d.today{border:1px solid rgba(201,168,76,.4);}
+.slots-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;}
+.slot-row{background:var(--surface2);border-radius:7px;padding:9px 12px;display:flex;align-items:center;gap:8px;}
+.slot-row.bloq{opacity:.45;}
+.slot-time{font-size:13px;font-weight:500;min-width:42px;}
+.slot-st{flex:1;font-size:11px;color:var(--muted);}
+.slot-st.ocupado{color:var(--pending);}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:500;background:#1e1e1e;border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:13px;display:none;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:300px;}
+#toast.show{display:flex;}
+#toast.ok{border-color:var(--confirm);color:var(--confirm);}
+#toast.err{border-color:var(--cancel);color:var(--cancel);}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 20px;color:var(--muted);}
+.empty svg{width:40px;height:40px;opacity:.25;margin:0 auto 12px;display:block;}
+
+/* CLIENTE SELECTOR BAR */
+.cli-bar{display:flex;gap:6px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.cli-bar label{font-size:11px;color:var(--muted);margin-right:2px;}
+.cli-chip{padding:6px 13px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;}
+.cli-chip:hover{border-color:var(--gold);color:var(--text);}
+.cli-chip.active{background:rgba(201,168,76,.15);border-color:var(--gold);color:var(--gold);}
+
+/* SECTION DIVIDER */
+.sec-div{border:none;border-top:1px solid var(--border);margin:4px 0;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Nexa</h1>
+    <p>painel de gerenciamento</p>
+    <div class="field"><label>Senha</label><input type="password" id="pwd" placeholder="••••••••"></div>
+    <button class="btn btn-gold btn-full" onclick="login()">Entrar</button>
+    <div id="login-err" style="color:var(--cancel);font-size:12px;text-align:center;display:none">Senha incorreta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="sidebar">
+    <div class="logo">Nexa<span>.pro</span></div>
+
+    <div class="nav-section">Mini Sites</div>
+    <button class="nav-btn active" onclick="nav('clientes')" id="nav-clientes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75M21 21v-2a4 4 0 00-3-3.87"/></svg>
+      Clientes
+    </button>
+
+    <div class="nav-section">Agendamentos</div>
+    <button class="nav-btn" onclick="nav('agenda')" id="nav-agenda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Agenda
+    </button>
+    <button class="nav-btn" onclick="nav('horarios')" id="nav-horarios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Horários
+    </button>
+    <button class="nav-btn" onclick="nav('servicos')" id="nav-servicos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      Serviços
+    </button>
+
+    <div class="sidebar-footer">
+      <hr class="sec-div">
+      <button class="nav-btn" onclick="logout()" style="color:var(--cancel)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </button>
+    </div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+
+<!-- MODAL CLIENTE -->
+<div class="overlay" id="modal-cli">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h3 id="mcli-title">Novo Cliente</h3>
+      <button class="modal-close" onclick="closeModal('modal-cli')">×</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="switchTab('info')"  id="mt-info">Informações</button>
+      <button class="modal-tab"        onclick="switchTab('links')" id="mt-links">Links</button>
+      <button class="modal-tab"        onclick="switchTab('visual')" id="mt-visual">Visual</button>
+    </div>
+    <!-- TAB INFO -->
+    <div id="tc-info">
+      <div class="form-grid">
+        <div class="field"><label>Nome completo *</label><input type="text" id="cf-nome" placeholder="Karol Ferreira"></div>
+        <div class="field"><label>Especialidade</label><input type="text" id="cf-esp" placeholder="Extensão de Cílios"></div>
+        <div class="field"><label>Slug (URL) *</label><input type="text" id="cf-slug" placeholder="karol-ferreira"></div>
+        <div class="field"><label>Foto (URL)</label><input type="text" id="cf-foto" placeholder="https://..."></div>
+        <div class="field"><label>Status</label>
+          <select id="cf-ativo"><option value="true">Ativo</option><option value="false">Inativo</option></select>
+        </div>
+        <div class="field"><label>Agendamento online</label>
+          <select id="cf-agenda"><option value="false">Não configurado</option><option value="true">Ativado</option></select>
+        </div>
+      </div>
+    </div>
+    <!-- TAB LINKS -->
+    <div id="tc-links" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--muted)">Links do mini site</span>
+        <button class="btn btn-ghost btn-sm" onclick="addLink()">+ Novo link</button>
+      </div>
+      <div id="links-list" style="display:flex;flex-direction:column;gap:7px"></div>
+    </div>
+    <!-- TAB VISUAL -->
+    <div id="tc-visual" style="display:none">
+      <div class="form-grid">
+        <div class="field"><label>Tema</label>
+          <select id="cf-tema"><option value="claro">Claro</option><option value="escuro">Escuro</option></select>
+        </div>
+        <div class="field"><label>Cor de fundo</label>
+          <div class="color-row"><input type="color" id="cf-fundo-p" value="#ffffff" oninput="syncC('fundo')"><input type="text" id="cf-fundo" value="#ffffff" oninput="syncCP('fundo')" placeholder="#ffffff"></div>
+        </div>
+        <div class="field"><label>Cor primária</label>
+          <div class="color-row"><input type="color" id="cf-prim-p" value="#b89a7a" oninput="syncC('prim')"><input type="text" id="cf-prim" value="#b89a7a" oninput="syncCP('prim')" placeholder="#b89a7a"></div>
+        </div>
+        <div class="field"><label>Cor do texto</label>
+          <div class="color-row"><input type="color" id="cf-texto-p" value="#5a3e2b" oninput="syncC('texto')"><input type="text" id="cf-texto" value="#5a3e2b" oninput="syncCP('texto')" placeholder="#5a3e2b"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cli')">Cancelar</button>
+      <button class="btn btn-gold" onclick="salvarCliente()" id="btn-salvar-cli">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LINK -->
+<div class="overlay" id="modal-link">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr">
+      <h3 id="ml-title">Novo Link</h3>
+      <button class="modal-close" onclick="closeModal('modal-link')">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="field"><label>Rótulo *</label><input type="text" id="lf-label" placeholder="Agendar Horário"></div>
+      <div class="field"><label>URL *</label><input type="text" id="lf-url" placeholder="https://..."></div>
+      <div class="field"><label>Ícone</label>
+        <select id="lf-icone">
+          <option value="calendar">📅 Calendário</option>
+          <option value="instagram">📷 Instagram</option>
+          <option value="whatsapp">💬 WhatsApp</option>
+          <option value="maps">📍 Localização</option>
+          <option value="link">🔗 Link genérico</option>
+        </select>
+      </div>
+      <div class="field"><label><input type="checkbox" id="lf-dest" style="margin-right:6px">Botão de destaque (sólido)</label></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-link')">Cancelar</button>
+      <button class="btn btn-gold" onclick="salvarLink()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SERVIÇO -->
+<div class="overlay" id="modal-serv">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr">
+      <h3 id="ms-title">Novo Serviço</h3>
+      <button class="modal-close" onclick="closeModal('modal-serv')">×</button>
+    </div>
+    <div class="form-grid">
+      <div class="field form-full"><label>Título *</label><input type="text" id="sf-titulo" placeholder="Esmaltação simples"></div>
+      <div class="field form-full"><label>Descrição</label><input type="text" id="sf-desc" placeholder="Descrição breve"></div>
+      <div class="field"><label>Duração (min)</label><input type="number" id="sf-dur" value="60" min="15" step="15"></div>
+      <div class="field"><label>Valor (R$)</label><input type="number" id="sf-valor" placeholder="0,00" step="0.01"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-serv')">Cancelar</button>
+      <button class="btn btn-gold" onclick="salvarServico()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SLOT -->
+<div class="overlay" id="modal-slot">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr">
+      <h3>Adicionar Horários</h3>
+      <button class="modal-close" onclick="closeModal('modal-slot')">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="field"><label>Tipo</label>
+        <select id="sl-tipo" onchange="renderSlotForm()">
+          <option value="unico">Horário único</option>
+          <option value="dia">Vários no mesmo dia</option>
+          <option value="semanal">Repetir semanalmente</option>
+          <option value="mensal">Repetir mensalmente</option>
+        </select>
+      </div>
+      <div id="sl-campos"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-slot')">Cancelar</button>
+      <button class="btn btn-gold" onclick="salvarSlots()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REMARCAR -->
+<div class="overlay" id="modal-rm">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-hdr">
+      <h3>Remarcar</h3>
+      <button class="modal-close" onclick="closeModal('modal-rm')">×</button>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr">
+      <div class="field"><label>Nova data e horário *</label><input type="datetime-local" id="rm-dt"></div>
+      <div class="field"><label>Mensagem (opcional)</label><input type="text" id="rm-msg" placeholder="Precisamos remarcar porque..."></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-rm')">Cancelar</button>
+      <button class="btn btn-blue" onclick="confirmarRemarcar()">Remarcar + WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const SUPABASE_URL  = 'https://wnyfaefcfgwhawcswjyx.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndueWZhZWZjZmd3aGF3Y3N3anl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTMwNjMsImV4cCI6MjA5NjY2OTA2M30.xkfao9VVMr8QM16FhrpxY6lPsjkhBsnfalmjYgXiPn8';
+const ADMIN_SENHA   = 'nexa2025';
+const SITE_BASE     = location.origin;
+// ────────────────────────────────────────────────────────
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_F = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS_S = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+let clientes=[], cliSel=null, agendamentos=[], servicos=[], slots=[];
+let filtroStatus='todos', calMes=new Date(), calDia=null;
+let editCliId=null, editLinkIdx=null, editLinks=[], editServId=null, rmAgend=null;
+
+// ── AUTH ──
+function login(){
+  if(document.getElementById('pwd').value===ADMIN_SENHA){
+    sessionStorage.setItem('nx_auth','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else { document.getElementById('login-err').style.display='block'; }
+}
+document.getElementById('pwd').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+function logout(){ sessionStorage.removeItem('nx_auth'); location.reload(); }
+if(sessionStorage.getItem('nx_auth')){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+function toast(msg,t='ok'){ const el=document.getElementById('toast'); el.textContent=msg; el.className='show '+t; setTimeout(()=>el.className='',3000); }
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+async function initApp(){
+  const {data}=await sb.from('clientes').select('*').order('nome');
+  clientes=data||[];
+  if(clientes.length) cliSel=clientes[0];
+  nav('clientes');
+}
+
+function nav(page){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+page)?.classList.add('active');
+  if(page==='clientes') renderClientes();
+  if(page==='agenda')   renderAgenda();
+  if(page==='horarios') renderHorarios();
+  if(page==='servicos') renderServicos();
+}
+
+// ══════════════════ CLIENTES ══════════════════
+async function renderClientes(){
+  const {data}=await sb.from('clientes').select('*').order('nome');
+  clientes=data||[];
+
+  document.getElementById('main').innerHTML=`
+    <div class="page-header">
+      <h2>Clientes</h2>
+      <button class="btn btn-gold" onclick="novoCliente()">+ Novo cliente</button>
+    </div>
+    <div class="grid" id="cli-grid"></div>
+  `;
+
+  const grid=document.getElementById('cli-grid');
+  if(!clientes.length){ grid.innerHTML='<div class="empty"><p>Nenhum cliente ainda.</p></div>'; return; }
+
+  clientes.forEach(c=>{
+    const cor=c.cor_primaria||'#b89a7a';
+    const ini=c.nome.charAt(0);
+    const fotoH=c.foto_url?`<img src="${c.foto_url}" alt="">`:`<span>${ini}</span>`;
+    const div=document.createElement('div');
+    div.className='cliente-card';
+    div.innerHTML=`
+      <div class="cc-header">
+        <div class="avatar" style="background:${cor}22;color:${cor}">${fotoH}</div>
+        <div class="cc-info"><h3>${c.nome}</h3><p>${c.especialidade||'—'}</p></div>
+        <span class="${c.ativo?'badge badge-ativo':'badge badge-inativo'}">${c.ativo?'ativo':'inativo'}</span>
+      </div>
+      <div class="cc-badges">
+        <span class="badge badge-slug">/${c.slug}</span>
+        ${c.tem_agendamento?'<span class="badge badge-agenda">📅 agenda ativa</span>':''}
+        <a class="preview-btn" href="${SITE_BASE}/cliente/${c.slug}" target="_blank">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          ver site
+        </a>
+        ${c.tem_agendamento?`<a class="preview-btn" href="${SITE_BASE}/agendar/${c.slug}" target="_blank">ver agenda</a>`:''}
+      </div>
+      <div class="cc-actions">
+        <button class="btn btn-ghost btn-sm" onclick="editarCliente('${c.id}')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="gerenciarLinks('${c.id}')">🔗 Links</button>
+        ${!c.tem_agendamento
+          ? `<button class="btn btn-outline-gold btn-sm" onclick="ativarAgenda('${c.id}')">📅 Configurar agenda</button>`
+          : `<button class="btn btn-ghost btn-sm" onclick="irParaAgenda('${c.id}')">📅 Ver agenda</button>`
+        }
+        <button class="btn btn-red btn-sm" onclick="deletarCliente('${c.id}','${c.nome}')">🗑</button>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+// ── CRUD CLIENTE ──
+function novoCliente(){
+  editCliId=null; editLinks=[];
+  document.getElementById('mcli-title').textContent='Novo Cliente';
+  ['cf-nome','cf-esp','cf-slug','cf-foto'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cf-ativo').value='true';
+  document.getElementById('cf-agenda').value='false';
+  document.getElementById('cf-tema').value='claro';
+  setColor('fundo','#ffffff'); setColor('prim','#b89a7a'); setColor('texto','#5a3e2b');
+  switchTab('info'); renderLinksList(); openModal('modal-cli');
+}
+
+async function editarCliente(id){
+  const c=clientes.find(x=>x.id===id);
+  editCliId=id;
+  document.getElementById('mcli-title').textContent='Editar Cliente';
+  document.getElementById('cf-nome').value=c.nome||'';
+  document.getElementById('cf-esp').value=c.especialidade||'';
+  document.getElementById('cf-slug').value=c.slug||'';
+  document.getElementById('cf-foto').value=c.foto_url||'';
+  document.getElementById('cf-ativo').value=String(c.ativo);
+  document.getElementById('cf-agenda').value=String(c.tem_agendamento||false);
+  document.getElementById('cf-tema').value=c.tema||'claro';
+  setColor('fundo',c.cor_fundo||'#ffffff');
+  setColor('prim',c.cor_primaria||'#b89a7a');
+  setColor('texto',c.cor_texto||'#5a3e2b');
+  const {data:lks}=await sb.from('links').select('*').eq('cliente_id',id).order('ordem');
+  editLinks=lks||[];
+  switchTab('info'); renderLinksList(); openModal('modal-cli');
+}
+
+function gerenciarLinks(id){ editarCliente(id).then(()=>switchTab('links')); }
+
+async function salvarCliente(){
+  const nome=document.getElementById('cf-nome').value.trim();
+  const slug=document.getElementById('cf-slug').value.trim();
+  if(!nome||!slug){ toast('Nome e slug obrigatórios','err'); return; }
+  const payload={
+    nome,slug,
+    especialidade:document.getElementById('cf-esp').value.trim()||null,
+    foto_url:document.getElementById('cf-foto').value.trim()||null,
+    ativo:document.getElementById('cf-ativo').value==='true',
+    tem_agendamento:document.getElementById('cf-agenda').value==='true',
+    tema:document.getElementById('cf-tema').value,
+    cor_primaria:document.getElementById('cf-prim').value,
+    cor_fundo:document.getElementById('cf-fundo').value,
+    cor_texto:document.getElementById('cf-texto').value,
+    atualizado_em:new Date().toISOString(),
+  };
+  let cliId=editCliId;
+  if(editCliId){ await sb.from('clientes').update(payload).eq('id',editCliId); }
+  else { const {data}=await sb.from('clientes').insert(payload).select().single(); cliId=data.id; }
+
+  // Salva links
+  for(let i=0;i<editLinks.length;i++){
+    const l={...editLinks[i],cliente_id:cliId,ordem:i+1};
+    if(l.id&&!l.id.startsWith('n_')){ await sb.from('links').update(l).eq('id',l.id); }
+    else { delete l.id; await sb.from('links').insert(l); }
+  }
+  toast(editCliId?'Cliente atualizado!':'Cliente criado! Agora configure os links e agenda.');
+  closeModal('modal-cli');
+  await renderClientes();
+}
+
+async function deletarCliente(id,nome){
+  if(!confirm(`Excluir "${nome}"?`)) return;
+  await sb.from('clientes').delete().eq('id',id);
+  toast('Cliente excluído'); await renderClientes();
+}
+
+async function ativarAgenda(id){
+  cliSel=clientes.find(c=>c.id===id);
+  await sb.from('clientes').update({tem_agendamento:true}).eq('id',id);
+  toast('Agenda ativada! Configure os serviços e horários.');
+  await renderClientes();
+  nav('servicos');
+}
+
+function irParaAgenda(id){
+  cliSel=clientes.find(c=>c.id===id);
+  nav('agenda');
+}
+
+// ── TABS MODAL ──
+function switchTab(t){
+  ['info','links','visual'].forEach(x=>{
+    document.getElementById('tc-'+x).style.display=x===t?'block':'none';
+    document.getElementById('mt-'+x).classList.toggle('active',x===t);
+  });
+}
+
+// ── CORES ──
+function setColor(w,v){ document.getElementById('cf-'+w).value=v; document.getElementById('cf-'+w+'-p').value=v; }
+function syncC(w){ setColor(w,document.getElementById('cf-'+w+'-p').value); }
+function syncCP(w){ const v=document.getElementById('cf-'+w).value; if(/^#[0-9a-fA-F]{6}$/.test(v)) document.getElementById('cf-'+w+'-p').value=v; }
+
+// ── AUTO SLUG ──
+document.addEventListener('input',e=>{
+  if(e.target.id==='cf-nome'&&!editCliId)
+    document.getElementById('cf-slug').value=e.target.value.toLowerCase().trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+});
+
+// ── LINKS ──
+function renderLinksList(){
+  const list=document.getElementById('links-list');
+  if(!editLinks.length){ list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px">Nenhum link</div>'; return; }
+  list.innerHTML=editLinks.map((l,i)=>`
+    <div style="background:#111;border:1px solid var(--border);border-radius:7px;padding:10px 12px;display:flex;align-items:center;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${l.label} ${l.destaque?'<span style="font-size:10px;color:var(--gold)">(destaque)</span>':''}</div>
+        <div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.url}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="editLink(${i})">Editar</button>
+      <button class="btn btn-red btn-sm" onclick="removeLink(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function addLink(){ editLinkIdx=null; ['lf-label','lf-url'].forEach(id=>document.getElementById(id).value=''); document.getElementById('lf-icone').value='link'; document.getElementById('lf-dest').checked=false; document.getElementById('ml-title').textContent='Novo Link'; openModal('modal-link'); }
+function editLink(i){ editLinkIdx=i; const l=editLinks[i]; document.getElementById('lf-label').value=l.label||''; document.getElementById('lf-url').value=l.url||''; document.getElementById('lf-icone').value=l.icone||'link'; document.getElementById('lf-dest').checked=!!l.destaque; document.getElementById('ml-title').textContent='Editar Link'; openModal('modal-link'); }
+function removeLink(i){ editLinks.splice(i,1); renderLinksList(); }
+function salvarLink(){
+  const label=document.getElementById('lf-label').value.trim();
+  const url=document.getElementById('lf-url').value.trim();
+  if(!label||!url){ toast('Preencha rótulo e URL','err'); return; }
+  const link={id:editLinkIdx!==null?editLinks[editLinkIdx].id:'n_'+Date.now(),label,url,icone:document.getElementById('lf-icone').value,destaque:document.getElementById('lf-dest').checked,ativo:true};
+  if(editLinkIdx!==null) editLinks[editLinkIdx]=link; else editLinks.push(link);
+  renderLinksList(); closeModal('modal-link');
+}
+
+// ══════════════════ AGENDA ══════════════════
+async function renderAgenda(){
+  if(!cliSel){ document.getElementById('main').innerHTML='<div class="empty"><p>Selecione um cliente com agenda ativa.</p></div>'; return; }
+  const {data}=await sb.from('agendamentos').select('*,servicos(titulo)').eq('cliente_id',cliSel.id).order('data_hora',{ascending:false});
+  agendamentos=data||[];
+  const pend=agendamentos.filter(a=>a.status==='pendente').length;
+
+  document.getElementById('main').innerHTML=`
+    <div class="page-header"><h2>Agenda — ${cliSel.nome}</h2></div>
+    ${cliBar()}
+    <div class="filtros">
+      ${[['todos','Todos'],['pendente','Pendentes'],['confirmado','Confirmados'],['remarcado','Remarcados'],['cancelado','Cancelados'],['concluido','Concluídos']].map(([v,l])=>`
+        <button class="filtro-btn ${filtroStatus===v?'active':''}" onclick="setFiltro('${v}')">
+          ${l}${v==='pendente'&&pend?` <span class="n-badge">${pend}</span>`:''}
+        </button>`).join('')}
+    </div>
+    <div class="agend-list" id="agend-list"></div>
+  `;
+  renderAgendList();
+}
+
+function cliBar(){
+  const comAgenda=clientes.filter(c=>c.tem_agendamento);
+  if(!comAgenda.length) return '';
+  return `<div class="cli-bar"><label>Cliente:</label>${comAgenda.map(c=>`
+    <button class="cli-chip ${cliSel?.id===c.id?'active':''}" onclick="mudarCli('${c.id}')">${c.nome}</button>`).join('')}
+  </div>`;
+}
+
+async function mudarCli(id){ cliSel=clientes.find(c=>c.id===id); await renderAgenda(); }
+function setFiltro(s){ filtroStatus=s; renderAgendList(); }
+
+function renderAgendList(){
+  const list=document.getElementById('agend-list');
+  let items=agendamentos;
+  if(filtroStatus!=='todos') items=items.filter(a=>a.status===filtroStatus);
+  if(!items.length){ list.innerHTML='<div class="empty"><p>Nenhum agendamento.</p></div>'; return; }
+  list.innerHTML=items.map(a=>{
+    const d=new Date(a.data_hora);
+    const hr=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const acoes=a.status==='pendente'?`
+      <button class="btn btn-green btn-sm" onclick="confirmarA('${a.id}','${a.nome_cliente}','${a.telefone}','${a.data_hora}','${a.servicos?.titulo||''}')">✓ Confirmar</button>
+      <button class="btn btn-blue btn-sm" onclick="abrirRm('${a.id}','${a.telefone}')">↺ Remarcar</button>
+      <button class="btn btn-red btn-sm" onclick="cancelarA('${a.id}','${a.nome_cliente}','${a.telefone}')">✕ Cancelar</button>
+    `:a.status==='confirmado'?`
+      <button class="btn btn-ghost btn-sm" onclick="concluirA('${a.id}')">✓ Concluir</button>
+      <button class="btn btn-red btn-sm" onclick="cancelarA('${a.id}','${a.nome_cliente}','${a.telefone}')">✕ Cancelar</button>
+    `:'';
+    return `<div class="agend-card ${a.status}">
+      <div class="agend-dt"><div class="day">${d.getDate().toString().padStart(2,'0')}</div><div class="mon">${MESES[d.getMonth()]}</div><div class="hr">${hr}</div></div>
+      <div class="agend-sep"></div>
+      <div class="agend-info"><div class="nome">${a.nome_cliente}</div><div class="serv">${a.servicos?.titulo||'—'}</div><div class="tel">📱 ${a.telefone}</div></div>
+      <span class="status-pill ${a.status}">${a.status}</span>
+      <div class="agend-actions">${acoes}</div>
+    </div>`;
+  }).join('');
+}
+
+async function confirmarA(id,nome,tel,dh,serv){
+  await sb.from('agendamentos').update({status:'confirmado',atualizado_em:new Date().toISOString()}).eq('id',id);
+  const d=new Date(dh);
+  const dt=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  const hr=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const msg=encodeURIComponent(`Olá ${nome}! 🌸 Seu agendamento foi *confirmado*!\n\n📅 ${dt} às ${hr}\n💅 ${serv}\n\nTe esperamos! 😊`);
+  window.open(`https://wa.me/55${tel.replace(/\D/g,'')}?text=${msg}`,'_blank');
+  toast('Confirmado!'); await renderAgenda();
+}
+
+function abrirRm(id,tel){ rmAgend={id,tel}; document.getElementById('rm-dt').value=''; document.getElementById('rm-msg').value=''; openModal('modal-rm'); }
+
+async function confirmarRemarcar(){
+  const dt=document.getElementById('rm-dt').value;
+  if(!dt){ toast('Selecione a nova data','err'); return; }
+  await sb.from('agendamentos').update({status:'remarcado',data_hora:new Date(dt).toISOString(),atualizado_em:new Date().toISOString()}).eq('id',rmAgend.id);
+  const d=new Date(dt);
+  const dtF=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  const hrF=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const msg=document.getElementById('rm-msg').value.trim()||'Precisamos remarcar seu horário';
+  const wa=encodeURIComponent(`Olá! ${msg}.\n\nNovo horário: *${dtF} às ${hrF}* ✅\n\nQualquer dúvida, é só chamar! 😊`);
+  window.open(`https://wa.me/55${rmAgend.tel.replace(/\D/g,'')}?text=${wa}`,'_blank');
+  toast('Remarcado!'); closeModal('modal-rm'); await renderAgenda();
+}
+
+async function cancelarA(id,nome,tel){
+  if(!confirm(`Cancelar agendamento de ${nome}?`)) return;
+  await sb.from('agendamentos').update({status:'cancelado',atualizado_em:new Date().toISOString()}).eq('id',id);
+  const wa=encodeURIComponent(`Olá ${nome}! Infelizmente precisamos *cancelar* seu agendamento. Entre em contato para reagendar. Sentimos muito! 🙏`);
+  window.open(`https://wa.me/55${tel.replace(/\D/g,'')}?text=${wa}`,'_blank');
+  toast('Cancelado'); await renderAgenda();
+}
+
+async function concluirA(id){
+  await sb.from('agendamentos').update({status:'concluido',atualizado_em:new Date().toISOString()}).eq('id',id);
+  toast('Concluído!'); await renderAgenda();
+}
+
+// ══════════════════ HORÁRIOS ══════════════════
+async function renderHorarios(){
+  if(!cliSel){ document.getElementById('main').innerHTML='<div class="empty"><p>Selecione um cliente.</p></div>'; return; }
+  const hoje=new Date(); hoje.setHours(0,0,0,0);
+  const {data}=await sb.from('slots').select('*').eq('cliente_id',cliSel.id).gte('data_hora',hoje.toISOString()).order('data_hora');
+  slots=data||[];
+
+  const diasC=new Set(slots.map(s=>{const d=new Date(s.data_hora);return`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;}));
+  const ano=calMes.getFullYear(),m=calMes.getMonth();
+  const prim=new Date(ano,m,1).getDay(), ult=new Date(ano,m+1,0).getDate();
+  let diasH=DIAS_S.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  for(let i=0;i<prim;i++) diasH+=`<button class="cal-d" disabled></button>`;
+  for(let d=1;d<=ult;d++){
+    const dt=new Date(ano,m,d); const key=`${ano}-${m}-${d}`;
+    const isH=dt.toDateString()===hoje.toDateString();
+    const past=dt<hoje&&!isH;
+    const sel=calDia&&calDia.toDateString()===dt.toDateString();
+    diasH+=`<button class="cal-d ${diasC.has(key)?'has':''} ${sel?'sel':''} ${isH?'today':''}" ${past?'disabled':`onclick="selDia(${ano},${m},${d})"`}>${d}</button>`;
+  }
+
+  document.getElementById('main').innerHTML=`
+    <div class="page-header"><h2>Horários — ${cliSel.nome}</h2><button class="btn btn-gold" onclick="openModal('modal-slot')">+ Adicionar</button></div>
+    ${cliBar()}
+    <div class="cal-wrap">
+      <div class="cal-nav-row">
+        <button onclick="mudaMes(-1)">‹</button>
+        <h4>${MESES_F[m]} ${ano}</h4>
+        <button onclick="mudaMes(1)">›</button>
+      </div>
+      <div class="cal-g">${diasH}</div>
+    </div>
+    <div id="slots-dia"></div>
+  `;
+  if(calDia) renderSlotsDia();
+  renderSlotForm();
+}
+
+function selDia(a,m,d){ calDia=new Date(a,m,d); renderHorarios(); }
+function mudaMes(dir){ calMes=new Date(calMes.getFullYear(),calMes.getMonth()+dir,1); renderHorarios(); }
+
+async function renderSlotsDia(){
+  const div=document.getElementById('slots-dia');
+  if(!calDia){ div.innerHTML=''; return; }
+  const {data:agends}=await sb.from('agendamentos').select('slot_id,nome_cliente,status').eq('cliente_id',cliSel.id).in('status',['pendente','confirmado']);
+  const ocup=Object.fromEntries((agends||[]).map(a=>[a.slot_id,a]));
+  const sd=slots.filter(s=>{const d=new Date(s.data_hora);return d.getFullYear()===calDia.getFullYear()&&d.getMonth()===calDia.getMonth()&&d.getDate()===calDia.getDate();});
+  const label=calDia.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+  div.innerHTML=`<div style="font-size:13px;font-weight:500;color:var(--gold);margin-bottom:10px">${label}</div>
+  ${!sd.length?'<div class="empty"><p>Nenhum horário neste dia.</p></div>':''}
+  <div class="slots-list">${sd.map(s=>{
+    const d=new Date(s.data_hora);
+    const hr=d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const a=ocup[s.id];
+    const st=s.bloqueado?'🔒 Bloqueado':a?`👤 ${a.nome_cliente} (${a.status})`:'✅ Disponível';
+    return `<div class="slot-row ${s.bloqueado?'bloq':''}">
+      <div class="slot-time">${hr}</div>
+      <div class="slot-st ${a?'ocupado':''}">${st}</div>
+      ${!a?`<button class="btn btn-ghost btn-sm" onclick="bloqSlot('${s.id}',${s.bloqueado})">${s.bloqueado?'Liberar':'Bloquear'}</button>`:''}
+      ${!a?`<button class="btn btn-red btn-sm" onclick="delSlot('${s.id}')">×</button>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function bloqSlot(id,atual){ await sb.from('slots').update({bloqueado:!atual}).eq('id',id); toast(atual?'Liberado!':'Bloqueado!'); await renderHorarios(); }
+async function delSlot(id){ if(!confirm('Remover horário?')) return; await sb.from('slots').delete().eq('id',id); toast('Removido'); await renderHorarios(); }
+
+function renderSlotForm(){
+  const tipo=document.getElementById('sl-tipo')?.value||'unico';
+  const c=document.getElementById('sl-campos'); if(!c) return;
+  if(tipo==='unico') c.innerHTML=`<div class="field"><label>Data e horário</label><input type="datetime-local" id="sl-dt"></div>`;
+  else c.innerHTML=`
+    ${tipo==='semanal'?`<div class="field"><label>Dia da semana</label><select id="sl-dsem">${DIAS_S.map((d,i)=>`<option value="${i}">${d}</option>`).join('')}</select></div>`:''}
+    ${tipo==='mensal'?`<div class="field"><label>Dia do mês (1-31)</label><input type="number" id="sl-dmes" min="1" max="31" value="1"></div>`:''}
+    ${tipo==='dia'?`<div class="field"><label>Data</label><input type="date" id="sl-data"></div>`:''}
+    ${tipo!=='unico'?`<div class="field"><label>Gerar até</label><input type="date" id="sl-ate"></div>`:''}
+    <div class="field"><label>Início</label><input type="time" id="sl-ini" value="09:00"></div>
+    <div class="field"><label>Fim</label><input type="time" id="sl-fim" value="18:00"></div>
+    <div class="field"><label>Intervalo (min)</label><input type="number" id="sl-int" value="60" min="15" step="15"></div>
+  `;
+}
+
+function gerarDtHoras(datas,ini,fim,intervalo){
+  const res=[];
+  for(const data of datas){
+    let [h,mi]=ini.split(':').map(Number);
+    const [hf,mf]=fim.split(':').map(Number);
+    while(h*60+mi<=hf*60+mf){
+      const dt=new Date(data);
+      dt.setHours(h,mi,0,0);
+      res.push(dt.toISOString());
+      mi+=intervalo; h+=Math.floor(mi/60); mi=mi%60;
+    }
+  }
+  return res;
+}
+
+async function salvarSlots(){
+  if(!cliSel) return;
+  const tipo=document.getElementById('sl-tipo').value;
+  let dhs=[];
+  if(tipo==='unico'){
+    const dt=document.getElementById('sl-dt').value;
+    if(!dt){ toast('Selecione data e horário','err'); return; }
+    dhs=[new Date(dt).toISOString()];
+  } else {
+    const ini=document.getElementById('sl-ini').value;
+    const fim=document.getElementById('sl-fim').value;
+    const intv=parseInt(document.getElementById('sl-int').value)||60;
+    const ate=new Date(document.getElementById('sl-ate').value);
+    let datas=[];
+    if(tipo==='dia'){
+      datas=[document.getElementById('sl-data').value];
+    } else if(tipo==='semanal'){
+      const ds=parseInt(document.getElementById('sl-dsem').value);
+      const cur=new Date(); cur.setHours(0,0,0,0);
+      while(cur<=ate){ if(cur.getDay()===ds) datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+    } else if(tipo==='mensal'){
+      const dm=parseInt(document.getElementById('sl-dmes').value);
+      const cur=new Date(); cur.setDate(1);
+      while(cur<=ate){ const d=new Date(cur.getFullYear(),cur.getMonth(),dm); if(d>=new Date()&&d<=ate) datas.push(d.toISOString().split('T')[0]); cur.setMonth(cur.getMonth()+1); }
+    }
+    dhs=gerarDtHoras(datas,ini,fim,intv);
+  }
+  if(!dhs.length){ toast('Nenhum horário gerado','err'); return; }
+  const ins=dhs.map(dh=>({cliente_id:cliSel.id,data_hora:dh,bloqueado:false}));
+  const {error}=await sb.from('slots').upsert(ins,{onConflict:'cliente_id,data_hora',ignoreDuplicates:true});
+  if(error){ toast('Erro: '+error.message,'err'); return; }
+  toast(`${dhs.length} horário(s) adicionado(s)!`);
+  closeModal('modal-slot'); await renderHorarios();
+}
+
+// ══════════════════ SERVIÇOS ══════════════════
+async function renderServicos(){
+  if(!cliSel){ document.getElementById('main').innerHTML='<div class="empty"><p>Selecione um cliente.</p></div>'; return; }
+  const {data}=await sb.from('servicos').select('*').eq('cliente_id',cliSel.id).order('ordem');
+  servicos=data||[];
+  document.getElementById('main').innerHTML=`
+    <div class="page-header"><h2>Serviços — ${cliSel.nome}</h2><button class="btn btn-gold" onclick="novoServico()">+ Novo serviço</button></div>
+    ${cliBar()}
+    <div class="serv-list">
+      ${!servicos.length?'<div class="empty"><p>Nenhum serviço cadastrado.</p></div>':''}
+      ${servicos.map(s=>`<div class="serv-item">
+        <div class="serv-item-info"><strong>${s.titulo}</strong><span>${s.descricao||''} · ${s.duracao_min}min</span></div>
+        <div class="serv-valor">${s.valor?'R$ '+Number(s.valor).toFixed(2).replace('.',','):''}</div>
+        <button class="btn btn-ghost btn-sm" onclick="editServ('${s.id}')">Editar</button>
+        <button class="btn btn-red btn-sm" onclick="delServ('${s.id}')">×</button>
+      </div>`).join('')}
+    </div>
+  `;
+}
+
+function novoServico(){ editServId=null; document.getElementById('ms-title').textContent='Novo Serviço'; ['sf-titulo','sf-desc','sf-valor'].forEach(id=>document.getElementById(id).value=''); document.getElementById('sf-dur').value='60'; openModal('modal-serv'); }
+function editServ(id){ const s=servicos.find(x=>x.id===id); editServId=id; document.getElementById('ms-title').textContent='Editar Serviço'; document.getElementById('sf-titulo').value=s.titulo||''; document.getElementById('sf-desc').value=s.descricao||''; document.getElementById('sf-dur').value=s.duracao_min||60; document.getElementById('sf-valor').value=s.valor||''; openModal('modal-serv'); }
+async function salvarServico(){ const t=document.getElementById('sf-titulo').value.trim(); if(!t||!cliSel){ toast('Preencha o título','err'); return; } const p={cliente_id:cliSel.id,titulo:t,descricao:document.getElementById('sf-desc').value.trim()||null,duracao_min:parseInt(document.getElementById('sf-dur').value)||60,valor:parseFloat(document.getElementById('sf-valor').value)||null}; if(editServId) await sb.from('servicos').update(p).eq('id',editServId); else await sb.from('servicos').insert(p); toast('Salvo!'); closeModal('modal-serv'); await renderServicos(); }
+async function delServ(id){ if(!confirm('Excluir serviço?')) return; await sb.from('servicos').delete().eq('id',id); toast('Excluído'); await renderServicos(); }
+
+if(sessionStorage.getItem('nx_auth')) initApp();
+</script>
+</body>
+</html>
