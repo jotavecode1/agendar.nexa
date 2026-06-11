@@ -101,6 +101,23 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .spin{width:28px;height:28px;border:2px solid var(--bor);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto;}
 @keyframes sp{to{transform:rotate(360deg)}}
 .empty-hrs{text-align:center;padding:20px;color:var(--muted);font-size:13px;}
+/* SOBRE & SHARE (migrado do mini site) */
+.mini-sobre{padding:32px 0 8px;text-align:center;border-top:1px solid var(--bor);margin-top:32px;}
+.mini-sobre-av{width:80px;height:80px;border-radius:50%;border:2px solid var(--primary);overflow:hidden;margin:0 auto 14px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;}
+.mini-sobre-av img{width:100%;height:100%;object-fit:cover;}
+.mini-sobre-av span{font-family:'Playfair Display',serif;font-size:30px;font-style:italic;color:var(--primary);}
+.mini-sobre-nome{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:4px;}
+.mini-sobre-nome em{font-style:italic;color:var(--primary);}
+.mini-sobre-esp{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;}
+.mini-sobre-bio{font-size:13px;color:rgba(255,255,255,.6);line-height:1.75;text-align:left;margin-bottom:24px;}
+.mini-share{padding:20px 0 8px;}
+.mini-share-titulo{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:center;}
+.mini-share-url{background:rgba(255,255,255,.04);border:1px solid var(--bor);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.mini-share-url span{flex:1;font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-copy{background:var(--primary);color:var(--btn-txt);border:none;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.mini-share-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mini-share-btn{padding:12px;border-radius:12px;border:1px solid var(--bor);background:rgba(255,255,255,.04);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+
 </style>
 </head>
 <body>
@@ -210,6 +227,33 @@ async function init(){
         </div>
       </div>
 
+      <!-- SOBRE & COMPARTILHAR -->
+      <div id="mini-sobre-section" style="display:none">
+        <div class="mini-sobre">
+          <div class="mini-sobre-av" id="ms-av"></div>
+          <div class="mini-sobre-nome" id="ms-nome"></div>
+          <div class="mini-sobre-esp" id="ms-esp"></div>
+          <div class="mini-sobre-bio" id="ms-bio"></div>
+        </div>
+        <div class="mini-share">
+          <div class="mini-share-titulo">Compartilhar</div>
+          <div class="mini-share-url">
+            <span id="ms-url"></span>
+            <button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('ms-url').textContent).then(()=>{this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',2000)})">Copiar</button>
+          </div>
+          <div class="mini-share-btns">
+            <button class="mini-share-btn" onclick="window.open('https://wa.me/?text='+encodeURIComponent(document.getElementById('ms-url').textContent),'_blank')">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14" style="color:#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.428a.5.5 0 00.615.615l5.573-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+              WhatsApp
+            </button>
+            <button class="mini-share-btn" onclick="navigator.share?navigator.share({url:document.getElementById('ms-url').textContent}):navigator.clipboard?.writeText(document.getElementById('ms-url').textContent)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Compartilhar
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="bottom-bar">
       <button id="btn-ag" onclick="agendar()" disabled>Selecione um serviço</button>
@@ -217,6 +261,19 @@ async function init(){
 
   renderServicos();
   renderCal();
+
+  // Popula seção sobre/compartilhar
+  const profUrl=`${location.origin}/cliente/${prof.slug}`;
+  const msAv=document.getElementById('ms-av');
+  if(msAv){
+    if(prof.foto_url) msAv.innerHTML=`<img src="${prof.foto_url}" alt="">`;
+    else msAv.innerHTML=`<span>${ini}</span>`;
+    document.getElementById('ms-nome').innerHTML=`<em>${ini}</em>${resto}`;
+    document.getElementById('ms-esp').textContent=prof.especialidade||'';
+    document.getElementById('ms-bio').textContent=prof.bio||'';
+    document.getElementById('ms-url').textContent=profUrl;
+    if(prof.bio||prof.especialidade) document.getElementById('mini-sobre-section').style.display='block';
+  }
 
   // Preselect via ?s=
   const preId=params.get('s');
@@ -385,12 +442,15 @@ function selecionarHr(hr){
 function atualizarBtn(){
   const btn=document.getElementById('btn-ag'); if(!btn) return;
   if(!selServ){btn.textContent='Selecione um serviço';btn.disabled=true;return;}
+  // Serviço selecionado mas calendário ainda não aberto
+  const calAberto=document.getElementById('cal-section').classList.contains('show');
+  if(!calAberto){btn.textContent='Ver horários disponíveis →';btn.disabled=false;btn.onclick=verHorarios;return;}
   if(!selDia){btn.textContent='Selecione uma data';btn.disabled=true;return;}
   if(!selHr){btn.textContent='Selecione um horário';btn.disabled=true;return;}
   const nome=document.getElementById('inp-nome')?.value.trim();
   const tel=document.getElementById('inp-tel')?.value.trim();
   if(!nome||!tel){btn.textContent='Preencha seus dados';btn.disabled=true;return;}
-  btn.textContent='Confirmar agendamento 🌸';btn.disabled=false;
+  btn.textContent='Confirmar agendamento 🌸';btn.disabled=false;btn.onclick=agendar;
 }
 
 /* ── AGENDAR ── */

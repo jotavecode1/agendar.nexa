@@ -12,7 +12,7 @@
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden;}
 
 /* ── HOME: LAYOUT ESTILO LINKTREE ── */
-.home-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 24px 120px;}
+.home-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 24px 48px;}
 .avatar-ring{width:110px;height:110px;border-radius:50%;border:2px solid var(--primary);padding:3px;margin-bottom:20px;flex-shrink:0;}
 .avatar-inner{width:100%;height:100%;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;}
 .avatar-inner img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -39,23 +39,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .sobre-esp{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:22px;}
 .sobre-bio{font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;text-align:left;}
 
-/* ── SHARE ── */
-.share-wrap{padding:24px 20px;}
-.share-url{background:rgba(255,255,255,.04);border:1px solid var(--bor);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.share-url span{flex:1;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.btn-copy{background:var(--primary);color:var(--btn-txt);border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.share-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.share-btn{padding:13px;border-radius:12px;border:1px solid var(--bor);background:rgba(255,255,255,.04);color:var(--text);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
 
-/* ── NAV ── */
-.page{display:none;padding-bottom:80px;}
-.page.active{display:block;}
-.nav-bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(13,13,13,.95);backdrop-filter:blur(20px);border-top:1px solid var(--bor);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom);}
-.ni{flex:1;padding:12px 0;background:none;border:none;color:var(--muted);font-size:11px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;transition:color .2s;}
-.ni svg{width:18px;height:18px;}
-.ni.active{color:var(--primary);}
-.ni::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:2px;background:var(--primary);border-radius:2px 2px 0 0;transform:scaleX(0);transition:transform .2s;}
-.ni.active::after{transform:scaleX(1);}
 
 .spin{width:28px;height:28px;border:2px solid var(--bor);border-top-color:var(--primary);border-radius:50%;animation:sp .8s linear infinite;}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -78,13 +62,6 @@ const ICONS={
   maps:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C8.134 2 5 5.134 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.866-3.134-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>',
   link:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>'
 };
-
-function showPage(p){
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.ni').forEach(el=>el.classList.remove('active'));
-  document.getElementById('page-'+p)?.classList.add('active');
-  document.getElementById('nav-'+p)?.classList.add('active');
-}
 
 async function init(){
   const{data:prof}=await sb.from('clientes').select('*').eq('slug',slug).eq('minisite_ativo',true).single();
@@ -127,49 +104,7 @@ async function init(){
       </div>
     </div>
 
-    <div class="page" id="page-sobre">
-      <div class="sobre-wrap">
-        <div class="sobre-av">${prof.foto_url?`<img src="${prof.foto_url}" alt="">`:`<span>${ini}</span>`}</div>
-        <div class="sobre-nome"><em>${ini}</em>${resto}</div>
-        ${prof.especialidade?`<div class="sobre-esp">${prof.especialidade}</div>`:''}
-        ${prof.bio?`<p class="sobre-bio">${prof.bio}</p>`:'<p style="color:var(--muted);font-size:13px">Nenhuma bio cadastrada.</p>'}
-      </div>
-    </div>
-
-    <div class="page" id="page-share">
-      <div class="share-wrap">
-        <p style="font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">Compartilhar</p>
-        <div class="share-url">
-          <span id="surl">${profUrl}</span>
-          <button class="btn-copy" onclick="navigator.clipboard?.writeText(document.getElementById('surl').textContent).then(()=>{this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',2000)})">Copiar</button>
-        </div>
-        <div class="share-btns">
-          <button class="share-btn" onclick="window.open('https://wa.me/?text='+encodeURIComponent(document.getElementById('surl').textContent),'_blank')">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="color:#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.428a.5.5 0 00.615.615l5.573-1.471A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-            WhatsApp
-          </button>
-          <button class="share-btn" onclick="navigator.share?navigator.share({url:document.getElementById('surl').textContent}):navigator.clipboard?.writeText(document.getElementById('surl').textContent)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            Compartilhar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <nav class="nav-bottom">
-      <button class="ni active" onclick="showPage('home')" id="nav-home">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home
-      </button>
-      <button class="ni" onclick="showPage('sobre')" id="nav-sobre">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        Sobre
-      </button>
-      <button class="ni" onclick="showPage('share')" id="nav-share">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        Compartilhar
-      </button>
-    </nav>`;
+`;
 }
 
 init();
