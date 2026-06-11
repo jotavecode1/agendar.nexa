@@ -142,10 +142,11 @@ async function init(){
   PROF=prof;
 
   // Aplica cores
-  document.documentElement.style.setProperty('--primary', prof.cor_primary||'#c9a84c');
-  document.documentElement.style.setProperty('--btn-txt', prof.cor_botao_txt||'#0d0d0d');
-  document.documentElement.style.setProperty('--bg',      prof.cor_bg||'#0d0d0d');
-  document.documentElement.style.setProperty('--text',    prof.cor_texto||'#f0f0f0');
+  // Usa visual específico da agenda (agf_*), com fallback para o visual do mini site
+  document.documentElement.style.setProperty('--primary', prof.agf_primary||prof.cor_primary||'#c9a84c');
+  document.documentElement.style.setProperty('--btn-txt', prof.agf_botao_txt||prof.cor_botao_txt||'#0d0d0d');
+  document.documentElement.style.setProperty('--bg',      prof.agf_bg||prof.cor_bg||'#0d0d0d');
+  document.documentElement.style.setProperty('--text',    prof.agf_texto||prof.cor_texto||'#f0f0f0');
   document.title=`Agendar · ${prof.nome}`;
 
   const[{data:servs},{data:disp},{data:bloqs},{data:cfg}]=await Promise.all([

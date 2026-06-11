@@ -127,3 +127,11 @@ CREATE POLICY "pub disponibilidade" ON disponibilidade FOR ALL USING (true) WITH
 CREATE POLICY "pub bloqueios"       ON bloqueios       FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub agendamentos"    ON agendamentos    FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub config_agenda"   ON config_agenda   FOR ALL USING (true) WITH CHECK (true);
+
+-- ── COLUNAS VISUAL SEPARADO DA AGENDA ───────────
+-- Execute este bloco se o banco já existe (migração)
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS agf_bg         text DEFAULT '#0d0d0d';
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS agf_primary    text DEFAULT '#c9a84c';
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS agf_texto      text DEFAULT '#f0f0f0';
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS agf_botao_txt  text DEFAULT '#0d0d0d';
+ALTER TABLE clientes ADD COLUMN IF NOT EXISTS foto_capa_url  text;
