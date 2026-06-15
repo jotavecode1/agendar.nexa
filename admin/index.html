@@ -335,7 +335,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;font-s
         <div class="f"><label>Foto de capa (URL)</label><input type="text" id="af-capa" placeholder="https://..."></div>
         <div class="f fc"><label>Bio</label><textarea id="af-bio" rows="3" placeholder="Apresentação..."></textarea></div>
         <div class="f"><label>Agenda</label><select id="af-agenda-ativo"><option value="false">Desativada</option><option value="true">Ativada</option></select></div>
-        <div class="f"><label>Vincular mini site?</label><select id="af-vincular"><option value="">— Não vincular —</option></select></div>
+        <input type="hidden" id="af-vincular" value="">
       </div>
     </div>
     <div class="mtp" id="mtp-ag-servicos">
@@ -710,7 +710,6 @@ async function novaAgenda(){
   ['af-nome','af-esp','af-slug','af-capa','af-bio'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('af-agenda-ativo').value='true';
   setColor('agf-bg','#0d0d0d'); setColor('agf-pri','#c9a84c'); setColor('agf-txt','#f0f0f0'); setColor('agf-btn','#0d0d0d');
-  await popularVincularSelect('af-vincular', null, false);
   renderDiasHorarios(); renderAgServsList();
   atualizarIntSub(); atualizarAntSub();
   mTab('ag','dados'); openM('modal-agenda-edit');
@@ -738,7 +737,6 @@ async function editAgenda(id){
   agServs=servs||[];
   const dispMap={}; (disp||[]).forEach(d=>dispMap[d.dia_semana]=d);
   if(cfg){intervalo=cfg.intervalo_min||0;const idx=ANT.indexOf(cfg.antecedencia_min);antIdx=idx>=0?idx:0;}
-  await popularVincularSelect('af-vincular', id, true);
   renderDiasHorarios(disp||[]); renderAgServsList();
   atualizarIntSub(); atualizarAntSub();
   mTab('ag','dados'); openM('modal-agenda-edit');
@@ -748,7 +746,7 @@ function abrirAgendaParaNovo(){
   closeM('modal-ask-agenda');
   const c=clientes.find(x=>x.id===novoMiniSalvoId);
   if(c){
-    editAgendaId=null; agServs=[]; intervalo=0; antIdx=0;
+    editAgendaId=c.id; agServs=[]; intervalo=0; antIdx=0;
     document.getElementById('m-ag-ttl').textContent='Criar Agenda';
     document.getElementById('af-nome').value=c.nome||'';
     document.getElementById('af-esp').value=c.especialidade||'';
@@ -757,9 +755,6 @@ function abrirAgendaParaNovo(){
     document.getElementById('af-bio').value=c.bio||'';
     document.getElementById('af-agenda-ativo').value='true';
     setColor('agf-bg','#0d0d0d'); setColor('agf-pri','#c9a84c'); setColor('agf-txt','#f0f0f0'); setColor('agf-btn','#0d0d0d');
-    popularVincularSelect('af-vincular', novoMiniSalvoId, false).then(()=>{
-      document.getElementById('af-vincular').value=novoMiniSalvoId;
-    });
     renderDiasHorarios([]); renderAgServsList(); atualizarIntSub(); atualizarAntSub();
     mTab('ag','dados'); openM('modal-agenda-edit');
   }
