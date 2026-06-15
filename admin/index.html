@@ -206,7 +206,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;font-s
 .cp-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 
 /* TOAST */
-#toast{position:fixed;bottom:20px;right:20px;z-index:500;background:#1e1e1e;border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;display:none;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:300px;}
+#toast{position:fixed;bottom:20px;right:20px;z-index:500;background:#1e1e1e;border:1px solid var(--bor);border-radius:10px;padding:11px 16px;font-size:13px;display:none;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5);max-width:340px;line-height:1.5;}
 #toast.show{display:flex;}
 #toast.ok{border-color:var(--green);color:var(--green);}
 #toast.err{border-color:var(--red);color:var(--red);}
@@ -494,7 +494,7 @@ function nav(p){
 }
 
 // ═══ UTILS ═══
-function toast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className='show '+t;setTimeout(()=>el.className='',3000);}
+function toast(m,t='ok'){const el=document.getElementById('toast');el.textContent=m;el.className='show '+t;setTimeout(()=>el.className='',t==='err'?5000:3000);}
 function openM(id){document.getElementById(id).classList.add('open');}
 function closeM(id){document.getElementById(id).classList.remove('open');}
 function durStr(m){return m>=60?`${Math.floor(m/60)}h${m%60?m%60+'min':''}`:`${m}min`;}
@@ -581,7 +581,7 @@ function cardCli(c){
 }
 
 function openEditModal(c){
-  // show a small inline popover with two options
+  // show a small inline popover with options
   const existing=document.getElementById('card-ctx-menu');
   if(existing) existing.remove();
   const menu=document.createElement('div');
@@ -591,6 +591,7 @@ function openEditModal(c){
     <div style="font-size:13px;font-weight:500;color:#e8e8e8;margin-bottom:4px">✏️ ${c.nome}</div>
     <button class="btn btn-ghost btn-full" onclick="document.getElementById('card-ctx-menu').remove();editMini('${c.id}')">🌐 Editar Mini Site</button>
     <button class="btn btn-blue btn-full" onclick="document.getElementById('card-ctx-menu').remove();editAgenda('${c.id}')">📅 Editar Agenda</button>
+    <button class="btn btn-red btn-full" onclick="document.getElementById('card-ctx-menu').remove();deletarCli('${c.id}','${c.nome.replace(/'/g,"\\'")}')">🗑 Excluir Cliente</button>
     <button class="btn btn-full" style="color:var(--mut);background:none" onclick="document.getElementById('card-ctx-menu').remove()">Cancelar</button>
   </div>`;
   menu.addEventListener('click',e=>{if(e.target===menu)menu.remove();});
@@ -675,10 +676,29 @@ async function popularVincularSelect(selectId, currentId, isEdit){
 
 function vinculaMini(){}
 
+// ═══ VALIDAÇÃO DE SLUG ═══
+async function checarSlugDisponivel(slug, currentId){
+  const{data}=await sb.from('clientes').select('id,nome').eq('slug',slug);
+  const conflito=(data||[]).find(c=>c.id!==currentId);
+  return conflito||null;
+}
+function sugerirSlug(base){
+  let n=2, novo=`${base}-${n}`;
+  while(clientes.some(c=>c.slug===novo)){n++;novo=`${base}-${n}`;}
+  return novo;
+}
+
 async function salvarMini(){
   const nome=document.getElementById('mf-nome').value.trim();
   const slug=document.getElementById('mf-slug').value.trim();
   if(!nome||!slug){toast('Nome e slug obrigatórios','err');return;}
+  const conflito=await checarSlugDisponivel(slug, editMiniId);
+  if(conflito){
+    const sugestao=sugerirSlug(slug);
+    toast(`O link "/${slug}" já está em uso por "${conflito.nome}". Sugestão: /${sugestao}`,'err');
+    document.getElementById('mf-slug').value=sugestao;
+    return;
+  }
   const p={nome,slug,especialidade:document.getElementById('mf-esp').value.trim()||null,foto_url:document.getElementById('mf-foto').value.trim()||null,minisite_ativo:document.getElementById('mf-mini-ativo').value==='true',status_interno:document.getElementById('mf-status').value,whatsapp:document.getElementById('mf-wa').value.trim()||null,instagram:document.getElementById('mf-ig').value.trim()||null,cor_bg:document.getElementById('mf-bg').value,cor_primary:document.getElementById('mf-pri').value,cor_texto:document.getElementById('mf-txt').value,cor_botao_txt:document.getElementById('mf-btn').value,atualizado_em:new Date().toISOString()};
   let cliId=editMiniId;
   if(editMiniId){
@@ -764,6 +784,13 @@ async function salvarAgenda(){
   const nome=document.getElementById('af-nome').value.trim();
   const slug=document.getElementById('af-slug').value.trim();
   if(!nome||!slug){toast('Nome e slug obrigatórios','err');return;}
+  const conflito=await checarSlugDisponivel(slug, editAgendaId);
+  if(conflito){
+    const sugestao=sugerirSlug(slug);
+    toast(`O link "/${slug}" já está em uso por "${conflito.nome}". Sugestão: /${sugestao}`,'err');
+    document.getElementById('af-slug').value=sugestao;
+    return;
+  }
   const p={nome,slug,especialidade:document.getElementById('af-esp').value.trim()||null,foto_capa_url:document.getElementById('af-capa').value.trim()||null,bio:document.getElementById('af-bio').value.trim()||null,agenda_ativo:document.getElementById('af-agenda-ativo').value==='true',agf_bg:document.getElementById('agf-bg').value,agf_primary:document.getElementById('agf-pri').value,agf_texto:document.getElementById('agf-txt').value,agf_botao_txt:document.getElementById('agf-btn').value,atualizado_em:new Date().toISOString()};
   let cliId=editAgendaId;
   if(editAgendaId){
